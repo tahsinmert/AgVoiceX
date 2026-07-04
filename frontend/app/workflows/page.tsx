@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { N8n } from "@thesvg/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,15 @@ export default function WorkflowsPage() {
   }
   return (
     <div className="space-y-5">
-      <div><h1 className="text-2xl font-semibold">Workflow Builder</h1><p className="text-sm text-muted-foreground">Define local workflow JSON that can be mapped to backend tools or n8n flows.</p></div>
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-md border bg-card">
+          <N8n className="h-6 w-6" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-semibold">Workflow Builder</h1>
+          <p className="text-sm text-muted-foreground">Define workflow JSON for backend tools and n8n flows.</p>
+        </div>
+      </div>
       <div className="grid gap-4 xl:grid-cols-[420px_1fr]">
         <Card><CardHeader><CardTitle>Create Workflow</CardTitle></CardHeader><CardContent className="space-y-3">
           <Input placeholder="slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />

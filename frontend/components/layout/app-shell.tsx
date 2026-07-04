@@ -12,9 +12,6 @@ import {
   Plug,
   Palette,
   Sparkles,
-  Database,
-  Workflow,
-  ServerCog,
   Search,
   Sun,
   Moon,
@@ -22,6 +19,7 @@ import {
   BookOpenText,
   SlidersHorizontal,
 } from "lucide-react";
+import { N8n, Ollama, Qdrant } from "@thesvg/react";
 
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -31,13 +29,13 @@ const nav = [
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/prompt-studio", label: "Prompts", icon: Sparkles },
   { href: "/settings", label: "Models", icon: SlidersHorizontal },
-  { href: "/ollama", label: "Ollama", icon: ServerCog },
+  { href: "/ollama", label: "Ollama", icon: Ollama },
   { href: "/knowledge", label: "Knowledge", icon: BookOpenText },
   { href: "/reservations", label: "Reservations", icon: CalendarDays },
   { href: "/conversations", label: "Conversations", icon: MessageSquareText },
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
-  { href: "/workflows", label: "Workflows", icon: Workflow },
-  { href: "/rag", label: "RAG", icon: Database },
+  { href: "/workflows", label: "Workflows", icon: N8n },
+  { href: "/rag", label: "RAG", icon: Qdrant },
   { href: "/templates", label: "Templates", icon: LayoutTemplate },
   { href: "/branding", label: "Branding", icon: Palette },
   { href: "/plugins", label: "Plugins", icon: Plug },
@@ -49,10 +47,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 hidden w-14 flex-col border-r bg-card lg:flex">
-        <div className="flex h-14 items-center justify-center border-b shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md">
-            <img src="/logo.png" alt="AgVoiceX Logo" className="h-6 w-6 object-contain" />
+      <aside className="fixed inset-y-0 left-0 hidden w-24 flex-col border-r bg-card lg:flex">
+        <div className="flex h-16 items-center justify-center border-b shrink-0 px-2">
+          <div className="flex h-12 w-20 items-center justify-center rounded-md">
+            <img src="/logo.png" alt="AgVoiceX" className="h-auto w-20 object-contain" />
           </div>
         </div>
         <nav className="flex-1 space-y-2 p-2 overflow-y-auto mt-2">
@@ -64,7 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-md transition-colors",
+                      "mx-auto flex h-10 w-10 items-center justify-center rounded-md transition-colors",
                       active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
@@ -79,10 +77,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
       </aside>
-      <main className="lg:pl-14 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 sm:px-6 lg:px-8">
+      <main className="lg:pl-24 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold">AgVoiceX</span>
+            <img src="/logo.png" alt="AgVoiceX" className="h-auto w-24 object-contain lg:hidden" />
           </div>
           <div className="flex items-center gap-4">
             <div className="relative hidden sm:block">
