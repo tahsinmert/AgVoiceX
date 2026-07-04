@@ -4,13 +4,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AudioLines,
   Bot,
+  Building2,
+  CalendarClock,
+  Car,
   CheckCircle2,
+  Dumbbell,
+  Hotel,
   Loader2,
   Mic,
   MicOff,
   PhoneOff,
+  Scissors,
   Send,
   Sparkles,
+  Stethoscope,
+  Utensils,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +40,65 @@ type Turn = {
   intent?: string;
 };
 
+const reservationCategories = [
+  {
+    id: "hotel",
+    label: "Hotel",
+    icon: Hotel,
+    scenario: "Hotel stay: capture guest name, phone, check-in date, arrival time, guests, room type, nights or checkout date, and special requests. Do not confirm without checkout date or nights.",
+    example: "Book a deluxe room for two tomorrow at 18:00 for three nights. My name is Ada Lovelace.",
+  },
+  {
+    id: "restaurant",
+    label: "Dining",
+    icon: Utensils,
+    scenario: "Restaurant table: capture name, phone, date, time, party size, seating preference, allergies, and occasion.",
+    example: "Reserve a table for four tomorrow at 20:00 under Ada Lovelace.",
+  },
+  {
+    id: "clinic",
+    label: "Clinic",
+    icon: Stethoscope,
+    scenario: "Clinic appointment: capture patient name, phone, preferred date and time, department or doctor, visit reason, and branch.",
+    example: "I need a dental appointment tomorrow at 10 for Ada Lovelace.",
+  },
+  {
+    id: "beauty",
+    label: "Salon",
+    icon: Scissors,
+    scenario: "Beauty appointment: capture client name, phone, service, stylist preference, date, time, duration, and notes.",
+    example: "Book a haircut for tomorrow at 15:00. My name is Ada.",
+  },
+  {
+    id: "wellness",
+    label: "Wellness",
+    icon: Dumbbell,
+    scenario: "Wellness or spa appointment: capture guest name, phone, treatment, therapist preference, date, time, duration, and health notes.",
+    example: "Book a massage for two people tomorrow at 17:00.",
+  },
+  {
+    id: "automotive",
+    label: "Service",
+    icon: Car,
+    scenario: "Automotive service: capture customer name, phone, vehicle, requested service, date, time, location, and issue notes.",
+    example: "Schedule car maintenance tomorrow morning for Ada, phone 555-0101.",
+  },
+  {
+    id: "meeting_room",
+    label: "Room",
+    icon: Building2,
+    scenario: "Meeting room booking: capture organizer name, phone or email, date, start time, attendee count, duration, room layout, and equipment.",
+    example: "Reserve a meeting room for six tomorrow at 13:00 for two hours.",
+  },
+  {
+    id: "generic",
+    label: "General",
+    icon: CalendarClock,
+    scenario: "General reservation: identify the business context, then capture name, phone, date, time, people, service, and notes.",
+    example: "I want to make a reservation for tomorrow afternoon.",
+  },
+];
+
 export function VoiceClient({ compact = false }: { compact?: boolean }) {
   const [status, setStatus] = useState("Ready");
   const [isRecording, setIsRecording] = useState(false);
@@ -39,6 +106,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [typedMessage, setTypedMessage] = useState("");
   const [error, setError] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("hotel");
 
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -48,8 +116,18 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
 
   const wsUrl = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001/api/v1";
-    return `${base.replace(/^http/, "ws")}/voice/stream`;
-  }, []);
+    const category = reservationCategories.find((item) => item.id === selectedCategory) ?? reservationCategories[0];
+    const params = new URLSearchParams({
+      reservation_type: category.id,
+      scenario: category.scenario,
+    });
+    return `${base.replace(/^http/, "ws")}/voice/stream?${params.toString()}`;
+  }, [selectedCategory]);
+
+  const activeCategory = useMemo(
+    () => reservationCategories.find((item) => item.id === selectedCategory) ?? reservationCategories[0],
+    [selectedCategory],
+  );
 
   useEffect(() => {
     return () => {
@@ -150,13 +228,16 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
     setStatus("Processing");
     setError("");
     try {
-      const response = await api.chat(message);
+      const response = await api.chat(message, undefined, {
+        reservation_type: activeCategory.id,
+        scenario: activeCategory.scenario,
+      });
       setTurns((items) => [
         {
           id: String(response.conversation_id),
           user: message,
           agent: response.reply,
-          intent: response.intent.intent,
+          intent: response.intent.reservation_type || response.intent.intent,
         },
         ...items,
       ]);
@@ -237,7 +318,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Live Voice</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Reservation assistant</p>
+          <p className="mt-1 text-sm text-muted-foreground">{activeCategory.label} reservation desk</p>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
@@ -252,8 +333,37 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
             <span className="text-xs text-muted-foreground">{isRecording ? "Recording" : isProcessing ? "Processing" : "Idle"}</span>
           </div>
 
+          <div className="mb-4 grid grid-cols-4 gap-2">
+            {reservationCategories.map((category) => {
+              const Icon = category.icon;
+              const selected = category.id === selectedCategory;
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => {
+                    if (!isRecording && !isProcessing) {
+                      closeSocket();
+                      setSelectedCategory(category.id);
+                    }
+                  }}
+                  disabled={isRecording || isProcessing}
+                  className={`flex h-14 flex-col items-center justify-center gap-1 rounded-md border text-[11px] font-medium transition ${
+                    selected
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                  }`}
+                  title={category.scenario}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{category.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           <div className="flex flex-1 flex-col items-center justify-center gap-5 py-4">
-            <div className="relative flex h-40 w-40 items-center justify-center rounded-full border border-border bg-card">
+            <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-border bg-card">
               <div className={`absolute inset-3 rounded-full border ${isRecording ? "border-primary/60" : "border-border"}`} />
               <div className={`absolute inset-8 rounded-full ${isRecording ? "bg-primary/10" : "bg-muted/40"}`} />
               {isProcessing ? (
@@ -288,7 +398,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
               onKeyDown={(event) => {
                 if (event.key === "Enter") void sendTypedMessage();
               }}
-              placeholder="Type a message"
+              placeholder={activeCategory.example}
               className="h-10 min-w-0 flex-1 rounded-md border border-border bg-card px-3 text-sm outline-none focus:border-primary"
             />
             <Button size="icon" onClick={() => void sendTypedMessage()} disabled={!typedMessage.trim() || isProcessing}>
@@ -297,7 +407,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
           </div>
 
           {error && (
-            <div className="mt-3 rounded-md border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">
+            <div className="mt-3 rounded-md border border-red-500/20 bg-red-50 p-3 text-xs text-red-700">
               {error}
             </div>
           )}

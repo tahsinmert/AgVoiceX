@@ -14,6 +14,7 @@ export type AdminError = { id: number; source: string; message: string; details:
 
 export type IntentPayload = {
   intent: string;
+  reservation_type?: string;
   customer_name?: string;
   phone?: string;
   email?: string;
@@ -21,6 +22,12 @@ export type IntentPayload = {
   time?: string;
   people?: number | null;
   reservation_id?: number | null;
+  service?: string;
+  room_type?: string;
+  checkout_date?: string;
+  nights?: number | null;
+  duration_minutes?: number | null;
+  location?: string;
   notes?: string;
   question?: string;
   reply?: string;

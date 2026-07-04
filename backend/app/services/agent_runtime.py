@@ -27,8 +27,7 @@ class AgentRuntime:
         bus.publish("runtime.started", {"channel": request.channel})
         provider, model = await AISettingsService(self.db, context).resolve_for_agent(agent)
         prompt = agent_service.active_prompt_for(agent, "You are a local business AI agent.")
-        memory_items = memory.load(request.customer_id)
-        intent = await provider.detect_intent(model, self._planner_input(prompt, memory_items, request.message))
+        intent = await provider.detect_intent(model, self._planner_input(prompt, request.message, request.metadata))
         plan = InternalPlanner().plan(intent)
         bus.publish(
             "planner.completed",
@@ -76,8 +75,17 @@ class AgentRuntime:
         )
 
     @staticmethod
-    def _planner_input(system_prompt: str, memory_items: list[str], message: str) -> str:
-        memory_text = "\n\n".join(memory_items[-3:])
-        if not memory_text:
-            return message
-        return f"{system_prompt}\n\nRelevant memory:\n{memory_text}\n\nCurrent user message:\n{message}"
+    def _planner_input(system_prompt: str, message: str, metadata: dict | None = None) -> str:
+        context_lines = []
+        reservation_type = (metadata or {}).get("reservation_type")
+        if reservation_type:
+            context_lines.append(f"Selected reservation category: {reservation_type}")
+        scenario = (metadata or {}).get("scenario")
+        if scenario:
+            context_lines.append(f"Category operating guidance: {scenario}")
+
+        sections = [system_prompt]
+        if context_lines:
+            sections.append("Conversation context:\n" + "\n".join(context_lines))
+        sections.append(f"Current user message:\n{message}")
+        return "\n\n".join(sections)

@@ -18,6 +18,8 @@ class VoiceOrchestrator:
         await websocket.accept()
         await websocket.send_json({"type": "ready"})
         logger.info("Voice connection accepted.")
+        reservation_type = websocket.query_params.get("reservation_type") or ""
+        scenario = websocket.query_params.get("scenario") or ""
         
         try:
             while True:
@@ -34,7 +36,11 @@ class VoiceOrchestrator:
                 
                 with SessionLocal() as db:
                     response = await ConversationService(db).handle(
-                        ConversationRequest(message=text, channel="voice")
+                        ConversationRequest(
+                            message=text,
+                            channel="voice",
+                            metadata={"reservation_type": reservation_type, "scenario": scenario},
+                        )
                     )
                 
                 await websocket.send_json(

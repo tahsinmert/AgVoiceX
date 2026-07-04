@@ -47,8 +47,23 @@ class ToolExecutor:
 
     def _create_reservation(self, intent: IntentPayload) -> ToolExecutionResult:
         if not all([intent.customer_name, intent.date, intent.time, intent.people]):
+            missing = []
+            if not intent.customer_name:
+                missing.append("name")
+            if not intent.date:
+                missing.append("date")
+            if not intent.time:
+                missing.append("time")
+            if not intent.people:
+                missing.append("guest count")
             return ToolExecutionResult(
-                reply="Please provide a name, date, time, party size, and phone number for the reservation."
+                reply=intent.reply
+                or f"To complete the {self._type_label(intent)} reservation, please provide: {', '.join(missing)}."
+            )
+        if intent.reservation_type == "hotel" and not intent.checkout_date and not intent.nights:
+            return ToolExecutionResult(
+                reply=intent.reply
+                or "To complete the hotel reservation, please provide the check-out date or the number of nights."
             )
         parsed_date = self._parse_date(intent.date)
         parsed_time = self._parse_time(intent.time)
@@ -62,12 +77,12 @@ class ToolExecutor:
                 reservation_date=parsed_date,
                 reservation_time=parsed_time,
                 people=intent.people,
-                notes=intent.notes or None,
+                notes=self._reservation_notes(intent),
             )
         )
         return ToolExecutionResult(
             reply=(
-                f"Reservation confirmed for {intent.customer_name} on "
+                f"{self._type_label(intent).title()} reservation confirmed for {intent.customer_name} on "
                 f"{reservation.reservation_date} at {reservation.reservation_time.strftime('%H:%M')} "
                 f"for {reservation.people} people. Confirmation number: {reservation.id}."
             ),
@@ -122,6 +137,45 @@ class ToolExecutor:
     def _admin_report(self) -> ToolExecutionResult:
         reservations = ReservationService(self.db, self.context).list_for_day()
         return ToolExecutionResult(reply=f"There are {len(reservations)} total reservations in the system.")
+
+    @staticmethod
+    def _type_label(intent: IntentPayload) -> str:
+        labels = {
+            "hotel": "hotel",
+            "restaurant": "restaurant",
+            "clinic": "clinic appointment",
+            "beauty": "beauty appointment",
+            "wellness": "wellness appointment",
+            "automotive": "service appointment",
+            "event": "event",
+            "travel": "travel",
+            "property": "property viewing",
+            "meeting_room": "meeting room",
+            "appointment": "appointment",
+            "generic": "reservation",
+        }
+        return labels.get(intent.reservation_type or "generic", "reservation")
+
+    @staticmethod
+    def _reservation_notes(intent: IntentPayload) -> str | None:
+        details = []
+        if intent.reservation_type:
+            details.append(f"type={intent.reservation_type}")
+        if intent.service:
+            details.append(f"service={intent.service}")
+        if intent.room_type:
+            details.append(f"room_type={intent.room_type}")
+        if intent.checkout_date:
+            details.append(f"checkout_date={intent.checkout_date}")
+        if intent.nights:
+            details.append(f"nights={intent.nights}")
+        if intent.duration_minutes:
+            details.append(f"duration_minutes={intent.duration_minutes}")
+        if intent.location:
+            details.append(f"location={intent.location}")
+        if intent.notes:
+            details.append(intent.notes)
+        return " | ".join(details) or None
 
     @staticmethod
     def _parse_date(value: str) -> date | None:

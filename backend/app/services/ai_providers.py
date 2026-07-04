@@ -12,14 +12,32 @@ from app.schemas.intents import IntentPayload
 from app.services.ollama import OllamaManager
 
 
-INTENT_SYSTEM_PROMPT = """You are an intent detection engine for a restaurant voice agent.
-Return only valid JSON. Do not include markdown, comments, or prose.
+INTENT_SYSTEM_PROMPT = """You are the structured reasoning layer for a professional live voice reservation agent.
+Return only valid JSON. Do not include markdown, comments, prose, apologies, or explanations.
+
+Primary operating mode:
+- Convert the user's latest message into one safe, executable reservation/customer/business intent.
+- Hotel reservations are the first-class scenario. Also support restaurant tables, medical/clinic appointments,
+  beauty or wellness appointments, automotive/service bookings, event/venue reservations, travel/tour bookings,
+  property viewings, coworking/meeting room reservations, and generic appointments.
+- Never invent customer details, dates, times, phone numbers, services, room types, or party sizes.
+- If required details are missing, keep the intent as reservation_create or reservation_update and write a short,
+  professional clarification in reply.
+- For hotel stays, put check-in in date, expected arrival time in time when provided, guest count in people,
+  room preference in room_type, checkout in checkout_date, nights in nights, and bed/parking/breakfast notes in notes.
+- For appointments, put the appointment service in service and the branch/address/room/provider in location when stated.
+- Use reservation_type values: hotel, restaurant, clinic, beauty, wellness, automotive, event, travel, property,
+  meeting_room, appointment, generic.
+- Normalize obvious dates and times when possible, but keep natural language only when the exact value is unknown.
+
 Allowed intents: reservation_create, reservation_update, reservation_cancel,
 reservation_lookup, faq, customer_lookup, admin_report, unknown.
 Use empty strings for missing text fields and null for missing numbers.
+
 Schema:
 {
   "intent": "reservation_create",
+  "reservation_type": "hotel",
   "customer_name": "",
   "phone": "",
   "email": "",
@@ -27,6 +45,12 @@ Schema:
   "time": "HH:MM or natural language if exact time is unknown",
   "people": 2,
   "reservation_id": null,
+  "service": "",
+  "room_type": "",
+  "checkout_date": "",
+  "nights": null,
+  "duration_minutes": null,
+  "location": "",
   "notes": "",
   "question": "",
   "reply": ""
@@ -92,6 +116,11 @@ class AIProvider(ABC):
     @staticmethod
     def _normalize_intent(intent: IntentPayload) -> IntentPayload:
         data = intent.model_dump()
+        notes = (intent.notes or "").strip()
+        current_message_match = re.search(r"Current user message:\s*(.+)\s*$", notes, flags=re.DOTALL | re.IGNORECASE)
+        if current_message_match:
+            data["notes"] = current_message_match.group(1).strip()
+
         lower_date = (intent.date or "").strip().lower()
         if lower_date in {"tomorrow", "yarın", "yarin"}:
             data["date"] = (date.today() + timedelta(days=1)).isoformat()
@@ -134,9 +163,29 @@ class AIProvider(ABC):
             "masa",
             "yer ayırt",
             "ayırt",
+            "booking",
+            "check in",
+            "check-in",
+            "otel",
+            "hotel",
+            "oda",
+            "room",
+            "appointment",
+            "randevu",
+            "muayene",
+            "haircut",
+            "bakım",
+            "bakim",
+            "service",
+            "servis",
+            "meeting room",
+            "toplantı",
+            "toplanti",
         )
         if not any(term in lower for term in reservation_terms):
             return IntentPayload(intent="unknown", question=text)
+
+        reservation_type = AIProvider._infer_reservation_type(lower)
 
         customer_name = ""
         name_match = re.search(
@@ -154,7 +203,7 @@ class AIProvider(ABC):
 
         people = None
         people_match = re.search(
-            r"(\d{1,2})\s*(?:people|person|guests|guest|kişilik|kisi|kişi|kisis?i|pax)",
+            r"(\d{1,2})\s*(?:people|person|guests|guest|kişilik|kisi|kişi|kisis?i|pax|adult|adults|yetişkin|yetiskin)",
             lower,
         )
         if people_match is None:
@@ -192,18 +241,64 @@ class AIProvider(ABC):
                 if 0 <= hour <= 23:
                     reservation_time = f"{hour:02d}:00"
 
+        room_type = ""
+        room_match = re.search(
+            r"\b(standard|deluxe|suite|king|queen|single|double|twin|family|executive|sea view|city view)\b",
+            lower,
+        )
+        if room_match:
+            room_type = room_match.group(1)
+
+        nights = None
+        nights_match = re.search(r"(\d{1,2})\s*(?:night|nights|gece)", lower)
+        if nights_match:
+            nights = int(nights_match.group(1))
+
+        service = ""
+        service_match = re.search(
+            r"(?:for|i need|book|reserve|randevu|appointment for|service for)\s+([A-Za-zÇĞİÖŞÜçğıöşü\s-]{3,48}?)(?:\s+(?:on|at|tomorrow|today|yarın|bugün|for\s+\d)|[.,!]|$)",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if service_match and reservation_type not in {"hotel", "restaurant"}:
+            service = service_match.group(1).strip(" .,!").lower()
+
         try:
             return IntentPayload(
                 intent="reservation_create",
+                reservation_type=reservation_type,
                 customer_name=customer_name,
                 phone=phone,
                 date=reservation_date,
                 time=reservation_time,
                 people=people,
+                service=service,
+                room_type=room_type,
+                nights=nights,
                 notes=text,
             )
         except ValueError:
-            return IntentPayload(intent="reservation_create", notes=text)
+            return IntentPayload(intent="reservation_create", reservation_type=reservation_type, notes=text)
+
+    @staticmethod
+    def _infer_reservation_type(lower: str) -> str:
+        checks = [
+            ("hotel", ("hotel", "otel", "room", "oda", "check in", "check-in", "checkout", "suite")),
+            ("restaurant", ("restaurant", "restoran", "table", "masa", "dinner", "lunch", "breakfast")),
+            ("clinic", ("clinic", "doctor", "dentist", "muayene", "doktor", "diş", "dis", "hospital", "hastane")),
+            ("beauty", ("hair", "haircut", "salon", "barber", "kuaför", "kuafor", "nail", "manicure")),
+            ("wellness", ("spa", "massage", "masaj", "therapy", "terapi", "wellness")),
+            ("automotive", ("car service", "auto", "vehicle", "araç", "arac", "servis", "maintenance", "bakım", "bakim")),
+            ("event", ("event", "venue", "wedding", "meeting hall", "organizasyon", "düğün", "dugun", "salon")),
+            ("travel", ("tour", "flight", "transfer", "travel", "gezi", "tur", "seyahat")),
+            ("property", ("property", "viewing", "real estate", "emlak", "daire", "ev gez", "house viewing")),
+            ("meeting_room", ("meeting room", "toplantı odası", "toplanti odasi", "coworking", "office")),
+            ("appointment", ("appointment", "randevu")),
+        ]
+        for reservation_type, terms in checks:
+            if any(term in lower for term in terms):
+                return reservation_type
+        return "generic"
 
 
 class OllamaProvider(AIProvider):

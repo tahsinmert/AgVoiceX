@@ -101,8 +101,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ message }),
     }),
-  chat: (message: string, agent_id?: number) =>
-    request<ChatResponse>("/chat", { method: "POST", body: JSON.stringify({ message, agent_id, channel: "admin-playground" }) }),
+  chat: (message: string, agent_id?: number, metadata?: Record<string, unknown>) =>
+    request<ChatResponse>("/chat", { method: "POST", body: JSON.stringify({ message, agent_id, metadata, channel: "admin-playground" }) }),
   events: () => request<{ events: RuntimeEvent[] }>("/runtime/events"),
   memories: () => request<{ memories: Memory[] }>("/runtime/memories"),
   plugins: () => request<{ plugins: PluginManifest[] }>("/plugin-manifests"),

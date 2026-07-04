@@ -17,6 +17,7 @@ IntentName = Literal[
 
 class IntentPayload(BaseModel):
     intent: IntentName = "unknown"
+    reservation_type: str = ""
     customer_name: str = ""
     phone: str = ""
     email: str = ""
@@ -24,6 +25,12 @@ class IntentPayload(BaseModel):
     time: str = ""
     people: int | None = Field(default=None, ge=1, le=50)
     reservation_id: int | None = None
+    service: str = ""
+    room_type: str = ""
+    checkout_date: str = ""
+    nights: int | None = Field(default=None, ge=1, le=365)
+    duration_minutes: int | None = Field(default=None, ge=15, le=10080)
+    location: str = ""
     notes: str = ""
     question: str = ""
     reply: str = ""

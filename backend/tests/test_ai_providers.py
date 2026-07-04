@@ -151,3 +151,17 @@ def test_intent_parser_infers_reservation_when_model_output_is_invalid():
     assert intent.phone == "555-0101"
     assert intent.people == 2
     assert intent.time == "19:00"
+
+
+def test_intent_parser_infers_hotel_reservation_details():
+    intent = OllamaProvider._infer_intent(
+        "Book a deluxe room for 2 guests tomorrow at 6 pm. My name is Ada Lovelace and phone is 555-0101."
+    )
+
+    assert intent.intent == "reservation_create"
+    assert intent.reservation_type == "hotel"
+    assert intent.room_type == "deluxe"
+    assert intent.customer_name == "Ada Lovelace"
+    assert intent.phone == "555-0101"
+    assert intent.people == 2
+    assert intent.time == "18:00"
