@@ -11,14 +11,11 @@ import {
   MessageSquareText,
   Plug,
   Palette,
-  Settings,
   Sparkles,
   Database,
   Workflow,
-  Mic,
   ServerCog,
   Search,
-  HelpCircle,
   Sun,
   Moon,
   AudioLines,
@@ -30,15 +27,14 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const nav = [
-  { href: "/", label: "Voice Console", icon: AudioLines },
-  { href: "/voice", label: "Live Voice Agent", icon: Mic },
+  { href: "/", label: "Live Voice", icon: AudioLines },
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/prompt-studio", label: "Prompts", icon: Sparkles },
   { href: "/settings", label: "Models", icon: SlidersHorizontal },
   { href: "/ollama", label: "Ollama", icon: ServerCog },
   { href: "/knowledge", label: "Knowledge", icon: BookOpenText },
   { href: "/reservations", label: "Reservations", icon: CalendarDays },
-  { href: "/conversations", label: "Calls", icon: MessageSquareText },
+  { href: "/conversations", label: "Conversations", icon: MessageSquareText },
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
   { href: "/workflows", label: "Workflows", icon: Workflow },
   { href: "/rag", label: "RAG", icon: Database },
@@ -84,21 +80,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
       <main className="lg:pl-14 flex flex-col min-h-screen">
-        {/* Top Navbar matching the image */}
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold">AgVoiceX</span>
-            <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-500">LOCAL VOICE</span>
           </div>
           <div className="flex items-center gap-4">
-            <button className="text-xs font-medium text-muted-foreground hover:text-foreground hidden sm:block">
-              Feedback
-            </button>
             <div className="relative hidden sm:block">
               <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-              placeholder="Search calls, agents, knowledge..."
+                placeholder="Search"
                 className="h-8 w-48 lg:w-64 rounded-md border border-border bg-muted/30 pl-8 pr-12 text-sm outline-none placeholder:text-muted-foreground focus:border-primary focus:bg-background"
               />
               <div className="absolute right-1.5 top-1.5 flex items-center justify-center rounded border border-border bg-background px-1 text-[10px] font-medium text-muted-foreground shadow-sm">
@@ -114,20 +105,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Sun className="h-4 w-4 hidden dark:block" />
               <Moon className="h-4 w-4 block dark:hidden" />
             </button>
-
-            <button className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
-              <HelpCircle className="h-4 w-4" />
-            </button>
-            <div className="h-8 w-8 overflow-hidden rounded-full border border-border">
-              <img
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                alt="Avatar"
-                className="h-full w-full object-cover bg-muted"
-              />
-            </div>
           </div>
         </header>
-        <div className="flex-1 mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">{children}</div>
+        <div className="flex-1 mx-auto w-full px-4 py-4 sm:px-6 lg:px-8 max-w-7xl">{children}</div>
       </main>
     </div>
   );

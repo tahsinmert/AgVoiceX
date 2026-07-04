@@ -11,12 +11,10 @@ import {
   PhoneOff,
   Send,
   Sparkles,
-  Volume2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import type { VoiceCapabilities } from "@/types/api";
 
 type VoiceEvent = {
   type?: "ready" | "transcript" | "audio" | "error";
@@ -41,7 +39,6 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [typedMessage, setTypedMessage] = useState("");
   const [error, setError] = useState("");
-  const [capabilities, setCapabilities] = useState<VoiceCapabilities | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -55,7 +52,6 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
   }, []);
 
   useEffect(() => {
-    void api.voiceCapabilities().then(setCapabilities).catch(() => setCapabilities(null));
     return () => {
       cleanupRecorder();
       closeSocket();
@@ -237,125 +233,108 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
   const stateLabel = isRecording ? "Listening" : isProcessing ? "Thinking" : status;
 
   return (
-    <div className={compact ? "space-y-4" : "grid gap-5 lg:grid-cols-[minmax(320px,0.72fr)_minmax(0,1fr)]"}>
-      <div className="rounded-lg border border-border bg-background p-5">
-        <div className="mb-5 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold">Live Voice Agent</h2>
-            <p className="mt-1 text-xs text-muted-foreground">Push-to-talk, local STT, local LLM, optional local TTS.</p>
-          </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-            {stateLabel}
-          </span>
+    <div className="flex h-[calc(100vh-6.5rem)] min-h-[560px] flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold">Live Voice</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Reservation assistant</p>
         </div>
-
-        <div className="mb-4 grid gap-2 sm:grid-cols-2">
-          <CapabilityPill active={capabilities?.stt_available} label="Local STT" detail={capabilities?.stt_model_path ?? "checking"} />
-          <CapabilityPill active={capabilities?.tts_available} label="Local TTS" detail={capabilities?.tts_available ? capabilities.tts_model_name : "text replies still work"} />
-        </div>
-
-        <div className="flex flex-col items-center gap-5 py-4">
-          <div className="relative flex h-44 w-44 items-center justify-center rounded-full border border-border bg-card">
-            <div className={`absolute inset-3 rounded-full border ${isRecording ? "border-emerald-500/60" : "border-border"}`} />
-            <div className={`absolute inset-8 rounded-full ${isRecording ? "bg-emerald-500/15" : "bg-muted/40"}`} />
-            {isProcessing ? (
-              <Loader2 className="relative h-14 w-14 animate-spin text-emerald-500" />
-            ) : (
-              <AudioLines className={`relative h-16 w-16 ${isRecording ? "text-emerald-500" : "text-muted-foreground"}`} />
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {isRecording ? (
-              <Button onClick={stopRecording} className="h-12 gap-2 bg-red-600 px-5 text-white hover:bg-red-700">
-                <PhoneOff className="h-4 w-4" />
-                Finish turn
-              </Button>
-            ) : (
-              <Button onClick={startRecording} disabled={isProcessing} className="h-12 gap-2 px-5">
-                <Mic className="h-4 w-4" />
-                Talk now
-              </Button>
-            )}
-            <Button variant="secondary" size="icon" disabled={!wsRef.current && !isRecording} onClick={closeSocket} title="Close voice socket">
-              <MicOff className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="mt-4 flex gap-2">
-          <input
-            value={typedMessage}
-            onChange={(event) => setTypedMessage(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") void sendTypedMessage();
-            }}
-            placeholder="Type a fallback request..."
-            className="h-10 min-w-0 flex-1 rounded-md border border-border bg-card px-3 text-sm outline-none focus:border-primary"
-          />
-          <Button size="icon" onClick={() => void sendTypedMessage()} disabled={!typedMessage.trim() || isProcessing}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {error && (
-          <div className="mt-4 rounded-md border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">
-            {error}
-          </div>
-        )}
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+          {stateLabel}
+        </span>
       </div>
 
-      <div className="rounded-lg border border-border bg-background">
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Bot className="h-4 w-4 text-emerald-500" />
-            <h2 className="text-sm font-semibold">Conversation</h2>
+      <div className={compact ? "space-y-4" : "grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]"}>
+        <div className="flex min-h-0 flex-col rounded-lg border border-border bg-background p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Call Control</h2>
+            <span className="text-xs text-muted-foreground">{isRecording ? "Recording" : isProcessing ? "Processing" : "Idle"}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Volume2 className="h-3.5 w-3.5" />
-            Audio replies when TTS is configured
+
+          <div className="flex flex-1 flex-col items-center justify-center gap-5 py-4">
+            <div className="relative flex h-40 w-40 items-center justify-center rounded-full border border-border bg-card">
+              <div className={`absolute inset-3 rounded-full border ${isRecording ? "border-emerald-500/60" : "border-border"}`} />
+              <div className={`absolute inset-8 rounded-full ${isRecording ? "bg-emerald-500/15" : "bg-muted/40"}`} />
+              {isProcessing ? (
+                <Loader2 className="relative h-12 w-12 animate-spin text-emerald-500" />
+              ) : (
+                <AudioLines className={`relative h-14 w-14 ${isRecording ? "text-emerald-500" : "text-muted-foreground"}`} />
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {isRecording ? (
+                <Button onClick={stopRecording} className="h-11 gap-2 bg-red-600 px-5 text-white hover:bg-red-700">
+                  <PhoneOff className="h-4 w-4" />
+                  Stop
+                </Button>
+              ) : (
+                <Button onClick={startRecording} disabled={isProcessing} className="h-11 gap-2 px-5">
+                  <Mic className="h-4 w-4" />
+                  Speak
+                </Button>
+              )}
+              <Button variant="secondary" size="icon" disabled={!wsRef.current && !isRecording} onClick={closeSocket} title="Close connection">
+                <MicOff className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="max-h-[520px] space-y-4 overflow-auto p-5">
-          {turns.length ? (
-            turns.map((turn) => (
-              <div key={turn.id} className="space-y-3">
-                <div className="ml-auto max-w-[86%] rounded-lg bg-emerald-500 px-4 py-3 text-sm text-white">
-                  {turn.user}
-                </div>
-                <div className="max-w-[86%] rounded-lg border border-border bg-card px-4 py-3 text-sm">
-                  <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                    <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
-                    {turn.intent ?? "agent"}
-                  </div>
-                  {turn.agent}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="flex min-h-72 flex-col items-center justify-center text-center">
-              <AudioLines className="mb-3 h-10 w-10 text-muted-foreground" />
-              <p className="text-sm font-medium">No voice turns yet</p>
-              <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-                Try: “Book a table for two tomorrow at seven. My name is Ada and my phone is 555-0101.”
-              </p>
+
+          <div className="mt-auto flex gap-2">
+            <input
+              value={typedMessage}
+              onChange={(event) => setTypedMessage(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void sendTypedMessage();
+              }}
+              placeholder="Type a message"
+              className="h-10 min-w-0 flex-1 rounded-md border border-border bg-card px-3 text-sm outline-none focus:border-primary"
+            />
+            <Button size="icon" onClick={() => void sendTypedMessage()} disabled={!typedMessage.trim() || isProcessing}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {error && (
+            <div className="mt-3 rounded-md border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">
+              {error}
             </div>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
 
-function CapabilityPill({ active, label, detail }: { active?: boolean; label: string; detail: string }) {
-  return (
-    <div className="rounded-md border border-border bg-card px-3 py-2">
-      <div className="flex items-center gap-2 text-xs font-medium">
-        <span className={`h-2 w-2 rounded-full ${active ? "bg-emerald-500" : "bg-amber-500"}`} />
-        {label}
+        <div className="flex min-h-0 flex-col rounded-lg border border-border bg-background">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <div className="flex items-center gap-2">
+              <Bot className="h-4 w-4 text-emerald-500" />
+              <h2 className="text-sm font-semibold">Conversation</h2>
+            </div>
+          </div>
+          <div className="min-h-0 flex-1 space-y-4 overflow-auto p-5">
+            {turns.length ? (
+              turns.map((turn) => (
+                <div key={turn.id} className="space-y-3">
+                  <div className="ml-auto max-w-[78%] rounded-lg bg-emerald-600 px-4 py-3 text-sm text-white">
+                    {turn.user}
+                  </div>
+                  <div className="max-w-[78%] rounded-lg border border-border bg-card px-4 py-3 text-sm">
+                    <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                      <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+                      {turn.intent ?? "assistant"}
+                    </div>
+                    {turn.agent}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex h-full min-h-72 flex-col items-center justify-center text-center">
+                <AudioLines className="mb-3 h-10 w-10 text-muted-foreground" />
+                <p className="text-sm font-medium">No conversation yet</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="mt-1 truncate text-[11px] text-muted-foreground">{detail}</div>
     </div>
   );
 }
