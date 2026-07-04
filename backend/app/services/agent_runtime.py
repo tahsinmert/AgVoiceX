@@ -63,6 +63,7 @@ class AgentRuntime:
             intent=intent,
             conversation_id=record.id,
             customer_id=record.customer_id,
+            reservation_id=result.reservation_id,
         )
 
     async def _execute_plan(self, plan, executor: ToolExecutor) -> ToolExecutionResult:

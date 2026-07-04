@@ -21,6 +21,11 @@ class ToolExecutionResult(dict):
         value = self.get("customer_id")
         return int(value) if value is not None else None
 
+    @property
+    def reservation_id(self) -> int | None:
+        value = self.get("reservation_id")
+        return int(value) if value is not None else None
+
 
 class ToolExecutor:
     def __init__(self, db: Session, context: TenantContext):
@@ -84,7 +89,8 @@ class ToolExecutor:
             reply=(
                 f"{self._type_label(intent).title()} reservation confirmed for {intent.customer_name} on "
                 f"{reservation.reservation_date} at {reservation.reservation_time.strftime('%H:%M')} "
-                f"for {reservation.people} people. Confirmation number: {reservation.id}."
+                f"for {reservation.people} people. Confirmation number: {reservation.id}. "
+                "The record has been saved in Reservations."
             ),
             customer_id=reservation.customer_id,
             reservation_id=reservation.id,

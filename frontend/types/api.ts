@@ -134,6 +134,7 @@ export type ChatResponse = {
   intent: IntentPayload;
   conversation_id: number;
   customer_id?: number | null;
+  reservation_id?: number | null;
 };
 
 export type PluginManifest = {

@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Dumbbell,
   Hotel,
+  ListChecks,
   Loader2,
   Mic,
   MicOff,
@@ -20,6 +21,7 @@ import {
   Stethoscope,
   Utensils,
 } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
@@ -30,6 +32,7 @@ type VoiceEvent = {
   reply?: string;
   intent?: string;
   conversation_id?: number;
+  reservation_id?: number | null;
   message?: string;
 };
 
@@ -38,6 +41,7 @@ type Turn = {
   user: string;
   agent: string;
   intent?: string;
+  reservationId?: number | null;
 };
 
 const reservationCategories = [
@@ -238,6 +242,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
           user: message,
           agent: response.reply,
           intent: response.intent.reservation_type || response.intent.intent,
+          reservationId: response.reservation_id,
         },
         ...items,
       ]);
@@ -264,6 +269,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
             user: message.text ?? "",
             agent: message.reply ?? "",
             intent: message.intent,
+            reservationId: message.reservation_id,
           },
           ...items,
         ]);
@@ -433,6 +439,18 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
                       {turn.intent ?? "assistant"}
                     </div>
                     {turn.agent}
+                    {turn.reservationId ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Saved as reservation #{turn.reservationId}</span>
+                        <Button asChild size="sm" variant="outline" className="ml-auto h-7 border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-100">
+                          <Link href="/reservations">
+                            <ListChecks className="h-3.5 w-3.5" />
+                            Open records
+                          </Link>
+                        </Button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ))

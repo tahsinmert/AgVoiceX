@@ -50,6 +50,7 @@ class VoiceOrchestrator:
                         "reply": response.reply,
                         "intent": response.intent.intent,
                         "conversation_id": response.conversation_id,
+                        "reservation_id": response.reservation_id,
                     }
                 )
 

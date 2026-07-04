@@ -20,3 +20,4 @@ class ConversationResponse(BaseModel):
     intent: IntentPayload
     conversation_id: int
     customer_id: int | None = None
+    reservation_id: int | None = None
