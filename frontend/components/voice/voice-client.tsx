@@ -50,56 +50,48 @@ const reservationCategories = [
     label: "Hotel",
     icon: Hotel,
     scenario: "Hotel stay: capture guest name, phone, check-in date, arrival time, guests, room type, nights or checkout date, and special requests. Do not confirm without checkout date or nights.",
-    example: "Book a deluxe room for two tomorrow at 18:00 for three nights. My name is Ada Lovelace.",
   },
   {
     id: "restaurant",
     label: "Dining",
     icon: Utensils,
     scenario: "Restaurant table: capture name, phone, date, time, party size, seating preference, allergies, and occasion.",
-    example: "Reserve a table for four tomorrow at 20:00 under Ada Lovelace.",
   },
   {
     id: "clinic",
     label: "Clinic",
     icon: Stethoscope,
     scenario: "Clinic appointment: capture patient name, phone, preferred date and time, department or doctor, visit reason, and branch.",
-    example: "I need a dental appointment tomorrow at 10 for Ada Lovelace.",
   },
   {
     id: "beauty",
     label: "Salon",
     icon: Scissors,
     scenario: "Beauty appointment: capture client name, phone, service, stylist preference, date, time, duration, and notes.",
-    example: "Book a haircut for tomorrow at 15:00. My name is Ada.",
   },
   {
     id: "wellness",
     label: "Wellness",
     icon: Dumbbell,
     scenario: "Wellness or spa appointment: capture guest name, phone, treatment, therapist preference, date, time, duration, and health notes.",
-    example: "Book a massage for two people tomorrow at 17:00.",
   },
   {
     id: "automotive",
     label: "Service",
     icon: Car,
     scenario: "Automotive service: capture customer name, phone, vehicle, requested service, date, time, location, and issue notes.",
-    example: "Schedule car maintenance tomorrow morning for Ada, phone 555-0101.",
   },
   {
     id: "meeting_room",
     label: "Room",
     icon: Building2,
     scenario: "Meeting room booking: capture organizer name, phone or email, date, start time, attendee count, duration, room layout, and equipment.",
-    example: "Reserve a meeting room for six tomorrow at 13:00 for two hours.",
   },
   {
     id: "generic",
     label: "General",
     icon: CalendarClock,
     scenario: "General reservation: identify the business context, then capture name, phone, date, time, people, service, and notes.",
-    example: "I want to make a reservation for tomorrow afternoon.",
   },
 ];
 
@@ -118,20 +110,19 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
   const chunksRef = useRef<Blob[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  const wsUrl = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001/api/v1";
-    const category = reservationCategories.find((item) => item.id === selectedCategory) ?? reservationCategories[0];
-    const params = new URLSearchParams({
-      reservation_type: category.id,
-      scenario: category.scenario,
-    });
-    return `${base.replace(/^http/, "ws")}/voice/stream?${params.toString()}`;
-  }, [selectedCategory]);
-
   const activeCategory = useMemo(
     () => reservationCategories.find((item) => item.id === selectedCategory) ?? reservationCategories[0],
     [selectedCategory],
   );
+
+  const wsUrl = useMemo(() => {
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001/api/v1";
+    const params = new URLSearchParams({
+      reservation_type: activeCategory.id,
+      scenario: activeCategory.scenario,
+    });
+    return `${base.replace(/^http/, "ws")}/voice/stream?${params.toString()}`;
+  }, [activeCategory]);
 
   useEffect(() => {
     return () => {
@@ -317,7 +308,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
     wsRef.current = null;
   }
 
-  const stateLabel = isRecording ? "Listening" : isProcessing ? "Thinking" : status;
+  const stateLabel = isRecording ? "Listening" : isProcessing ? "Processing" : status;
 
   return (
     <div className="flex h-[calc(100vh-6.5rem)] min-h-[560px] flex-col gap-4">
@@ -404,7 +395,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
               onKeyDown={(event) => {
                 if (event.key === "Enter") void sendTypedMessage();
               }}
-              placeholder={activeCategory.example}
+              placeholder="Type the customer request"
               className="h-10 min-w-0 flex-1 rounded-md border border-border bg-card px-3 text-sm outline-none focus:border-primary"
             />
             <Button size="icon" onClick={() => void sendTypedMessage()} disabled={!typedMessage.trim() || isProcessing}>
@@ -412,11 +403,9 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
             </Button>
           </div>
 
-          {error && (
-            <div className="mt-3 rounded-md border border-red-500/20 bg-red-50 p-3 text-xs text-red-700">
-              {error}
-            </div>
-          )}
+          {error ? (
+            <div className="mt-3 rounded-md border border-red-500/20 bg-red-50 p-3 text-xs text-red-700">{error}</div>
+          ) : null}
         </div>
 
         <div className="flex min-h-0 flex-col rounded-lg border border-border bg-background">
@@ -425,14 +414,15 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
               <Bot className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold">Conversation</h2>
             </div>
+            {turns.length ? (
+              <Button variant="ghost" size="sm" onClick={() => setTurns([])}>Clear</Button>
+            ) : null}
           </div>
           <div className="min-h-0 flex-1 space-y-4 overflow-auto p-5">
             {turns.length ? (
               turns.map((turn) => (
                 <div key={turn.id} className="space-y-3">
-                  <div className="ml-auto max-w-[78%] rounded-lg bg-primary px-4 py-3 text-sm text-primary-foreground">
-                    {turn.user}
-                  </div>
+                  <div className="ml-auto max-w-[78%] rounded-lg bg-primary px-4 py-3 text-sm text-primary-foreground">{turn.user}</div>
                   <div className="max-w-[78%] rounded-lg border border-border bg-card px-4 py-3 text-sm">
                     <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
                       <Sparkles className="h-3.5 w-3.5 text-primary" />

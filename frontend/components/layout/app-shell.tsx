@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
@@ -24,88 +25,104 @@ import { N8nIcon, OllamaIcon, QdrantIcon } from "@/components/brand-icons";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const nav = [
+const navTop = [
   { href: "/", label: "Live Voice", icon: AudioLines },
+];
+
+const navMiddle = [
   { href: "/agents", label: "Agents", icon: Bot },
-  { href: "/prompt-studio", label: "Prompts", icon: Sparkles },
-  { href: "/settings", label: "Models", icon: SlidersHorizontal },
-  { href: "/ollama", label: "Ollama", icon: OllamaIcon },
-  { href: "/knowledge", label: "Knowledge", icon: BookOpenText },
   { href: "/reservations", label: "Reservations", icon: CalendarDays },
   { href: "/conversations", label: "Conversations", icon: MessageSquareText },
+  { href: "/prompt-studio", label: "Prompts", icon: Sparkles },
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
-  { href: "/workflows", label: "Workflows", icon: N8nIcon },
-  { href: "/rag", label: "RAG", icon: QdrantIcon },
-  { href: "/templates", label: "Templates", icon: LayoutTemplate },
+];
+
+const navBottom = [
+  { href: "/settings", label: "Settings", icon: SlidersHorizontal },
+  { href: "/knowledge", label: "Knowledge", icon: BookOpenText },
   { href: "/branding", label: "Branding", icon: Palette },
-  { href: "/plugins", label: "Plugins", icon: Plug },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
   
+  const renderNavGroup = (items: typeof navTop) => (
+    <div className="flex flex-col gap-1">
+      {items.map((item) => {
+        const active = pathname === item.href;
+        return (
+          <Tooltip key={item.href}>
+            <TooltipTrigger asChild>
+              <Link
+                href={item.href}
+                className={cn(
+                  "relative mx-auto flex h-10 w-10 items-center justify-center transition-colors",
+                  active 
+                    ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-r-md" 
+                    : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800",
+                )}
+              >
+                {active && (
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-blue-600 rounded-r-full" />
+                )}
+                <item.icon className="h-5 w-5" />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={10}>
+              {item.label}
+            </TooltipContent>
+          </Tooltip>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 hidden w-24 flex-col border-r bg-card lg:flex">
-        <div className="flex h-16 items-center justify-center border-b shrink-0 px-2">
-          <div className="flex h-12 w-20 items-center justify-center rounded-md">
-            <img src="/logo.png" alt="AgVoiceX" className="h-auto w-20 object-contain" />
-          </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0F1115]">
+      <aside className="fixed inset-y-0 left-0 hidden w-[68px] flex-col border-r border-gray-200 dark:border-[#2A2E38] bg-white dark:bg-[#1A1D24] lg:flex z-20">
+        <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-[#2A2E38] shrink-0">
+          <Link href="/" className="flex items-center justify-center rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <Image src="/logo.png" alt="Logo" width={48} height={24} className="h-8 w-14 object-contain" priority />
+          </Link>
         </div>
-        <nav className="flex-1 space-y-2 p-2 overflow-y-auto mt-2">
-          {nav.map((item) => {
-            const active = pathname === item.href;
-            return (
-              <Tooltip key={item.href}>
+        
+        <nav className="flex-1 flex flex-col p-2 overflow-y-auto overflow-x-hidden no-scrollbar">
+          <div className="mt-2 mb-4">
+            {renderNavGroup(navTop)}
+          </div>
+          
+          <hr className="border-t border-gray-200 dark:border-[#2A2E38] mx-2" />
+          
+          <div className="my-4">
+            {renderNavGroup(navMiddle)}
+          </div>
+          
+          <div className="mt-auto pt-4 flex flex-col gap-4 border-t border-gray-200 dark:border-[#2A2E38]">
+            {renderNavGroup(navBottom)}
+            
+            <div className="mt-2 flex items-center justify-center pb-4">
+              <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "mx-auto flex h-10 w-10 items-center justify-center rounded-md transition-colors",
-                      active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                  </Link>
+                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2563EB] text-white hover:bg-[#1E40AF] transition-colors shadow-sm">
+                    <span className="text-[13px] font-semibold">TM</span>
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={10}>
-                  {item.label}
+                  <div className="flex flex-col">
+                    <span className="font-medium">Tahsin Mert</span>
+                    <span className="text-xs text-gray-400">Admin</span>
+                  </div>
                 </TooltipContent>
               </Tooltip>
-            );
-          })}
+            </div>
+          </div>
         </nav>
       </aside>
-      <main className="lg:pl-24 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="AgVoiceX" className="h-auto w-24 object-contain lg:hidden" />
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search"
-                className="h-8 w-48 lg:w-64 rounded-md border border-border bg-muted/30 pl-8 pr-12 text-sm outline-none placeholder:text-muted-foreground focus:border-primary focus:bg-background"
-              />
-              <div className="absolute right-1.5 top-1.5 flex items-center justify-center rounded border border-border bg-background px-1 text-[10px] font-medium text-muted-foreground shadow-sm">
-                <span className="text-xs">⌘</span>K
-              </div>
-            </div>
-            
-            <button 
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-              title="Toggle theme"
-            >
-              <Sun className="h-4 w-4 hidden dark:block" />
-              <Moon className="h-4 w-4 block dark:hidden" />
-            </button>
-          </div>
-        </header>
-        <div className="flex-1 mx-auto w-full px-4 py-4 sm:px-6 lg:px-8 max-w-7xl">{children}</div>
+      
+      <main className="lg:pl-[68px] flex flex-col min-h-screen relative">
+        <div className="flex-1 w-full mx-auto pb-8 bg-gray-50 dark:bg-[#0F1115]">
+          {children}
+        </div>
       </main>
     </div>
   );
