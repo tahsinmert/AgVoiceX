@@ -34,7 +34,9 @@ for service in "${required_services[@]}"; do
 done
 info "Required containers are running."
 
-curl -fsS "${BACKEND_PUBLIC_URL:-http://localhost:8000}/health" >/tmp/voice-agent-health.json \
+backend_public_url="${BACKEND_PUBLIC_URL:-http://localhost:${BACKEND_HOST_PORT:-8001}}"
+
+curl -fsS "${backend_public_url}/health" >/tmp/voice-agent-health.json \
   || fail "Backend /health is not healthy. Check: docker compose logs -f backend"
 info "Backend /health works."
 
@@ -52,15 +54,18 @@ curl -fsS http://localhost:6333/ >/dev/null \
   || fail "Qdrant endpoint is not reachable at http://localhost:6333/."
 info "Qdrant endpoint works."
 
-curl -fsS http://localhost:11434/api/tags >/tmp/voice-agent-ollama-tags.json \
-  || fail "Ollama endpoint is not reachable at http://localhost:11434/api/tags."
-info "Ollama endpoint works."
+curl -fsS "${backend_public_url}/api/v1/ollama/status" >/tmp/voice-agent-ollama-status.json \
+  || fail "Backend cannot reach the configured Ollama endpoint. Check OLLAMA_BASE_URL and docker compose logs -f backend."
+info "Backend can reach the configured Ollama endpoint."
 
-if grep -Eq '"models"[[:space:]]*:[[:space:]]*\[\]' /tmp/voice-agent-ollama-tags.json; then
-  info "No Ollama models are installed."
-  info "Run: docker compose exec ollama ollama pull <model-name>"
+curl -fsS "${backend_public_url}/api/v1/models" >/tmp/voice-agent-models.json \
+  || fail "Backend model listing failed."
+if grep -Eq '^\[\]$' /tmp/voice-agent-models.json; then
+  info "No models are visible through the configured provider."
+  info "If using the Docker Ollama service, run: docker compose exec ollama ollama pull <model-name>"
+  info "If using host Ollama, check: OLLAMA_BASE_URL=http://host.docker.internal:11434"
 else
-  info "At least one Ollama model is installed."
+  info "At least one model is visible through the configured provider."
 fi
 
 info "Development stack check complete."

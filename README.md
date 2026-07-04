@@ -106,7 +106,7 @@ docker compose exec backend alembic upgrade head
 ### 3. Verify health
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8001/health
 bash scripts/dev-check.sh
 ```
 
@@ -121,7 +121,7 @@ Useful local services:
 | Service | URL |
 | --- | --- |
 | Admin UI | `http://localhost:3000` |
-| Backend API | `http://localhost:8000` |
+| Backend API | `http://localhost:8001` |
 | n8n | `http://localhost:5678` |
 | Qdrant | `http://localhost:6333` |
 | Ollama | `http://localhost:11434` |
@@ -139,11 +139,11 @@ docker compose exec ollama ollama pull llama3.1:8b
 Set provider and model:
 
 ```bash
-curl -X PUT http://localhost:8000/api/v1/settings/provider \
+curl -X PUT http://localhost:8001/api/v1/settings/provider \
   -H 'Content-Type: application/json' \
   -d '{"provider":"ollama"}'
 
-curl -X PUT http://localhost:8000/api/v1/settings/model \
+curl -X PUT http://localhost:8001/api/v1/settings/model \
   -H 'Content-Type: application/json' \
   -d '{"model":"llama3.1:8b"}'
 ```
@@ -151,7 +151,7 @@ curl -X PUT http://localhost:8000/api/v1/settings/model \
 Test chat:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/chat \
+curl -X POST http://localhost:8001/api/v1/chat \
   -H 'Content-Type: application/json' \
   -d '{"message":"Book a table for 2 on 2026-07-10 at 19:00. My name is Ada Lovelace and my phone is 555-0101."}'
 ```
@@ -168,7 +168,7 @@ docker compose exec backend python scripts/seed_restaurant_demo.py
 Check availability:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/reservations/availability \
+curl -X POST http://localhost:8001/api/v1/reservations/availability \
   -H 'Content-Type: application/json' \
   -d '{"organization_id":1,"business_id":1,"reservation_date":"2026-07-06","reservation_time":"18:00","people":2}'
 ```
@@ -176,7 +176,7 @@ curl -X POST http://localhost:8000/api/v1/reservations/availability \
 Create a reservation:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/reservations \
+curl -X POST http://localhost:8001/api/v1/reservations \
   -H 'Content-Type: application/json' \
   -d '{"organization_id":1,"business_id":1,"customer_name":"Ada Lovelace","phone":"+90-555-0199","reservation_date":"2026-07-06","reservation_time":"18:00","people":2,"notes":"Window table if available"}'
 ```
@@ -186,11 +186,11 @@ curl -X POST http://localhost:8000/api/v1/reservations \
 Create organization and business records:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/organizations \
+curl -X POST http://localhost:8001/api/v1/organizations \
   -H 'Content-Type: application/json' \
   -d '{"name":"Acme","slug":"acme"}'
 
-curl -X POST http://localhost:8000/api/v1/businesses \
+curl -X POST http://localhost:8001/api/v1/businesses \
   -H 'Content-Type: application/json' \
   -d '{"organization_id":1,"name":"Acme Restaurant","slug":"restaurant"}'
 ```
@@ -198,11 +198,11 @@ curl -X POST http://localhost:8000/api/v1/businesses \
 Create an agent and prompt:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/agents \
+curl -X POST http://localhost:8001/api/v1/agents \
   -H 'Content-Type: application/json' \
   -d '{"organization_id":1,"business_id":1,"name":"Reservation Agent","provider":"ollama","model":"llama3.1:8b"}'
 
-curl -X POST http://localhost:8000/api/v1/prompts \
+curl -X POST http://localhost:8001/api/v1/prompts \
   -H 'Content-Type: application/json' \
   -d '{"organization_id":1,"agent_id":1,"name":"Reservation Prompt","content":"You help manage restaurant reservations."}'
 ```
@@ -210,7 +210,7 @@ curl -X POST http://localhost:8000/api/v1/prompts \
 Stream with tenant and agent context:
 
 ```bash
-curl -N -X POST http://localhost:8000/api/v1/chat/stream \
+curl -N -X POST http://localhost:8001/api/v1/chat/stream \
   -H 'Content-Type: application/json' \
   -d '{"organization_id":1,"business_id":1,"agent_id":1,"message":"Hello"}'
 ```
@@ -280,14 +280,14 @@ Some Coqui TTS models require either `TTS_SPEAKER` or `TTS_SPEAKER_WAV`.
 Upload knowledge:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/knowledge/upload \
+curl -X POST http://localhost:8001/api/v1/knowledge/upload \
   -F "file=@knowledge/menu.md"
 ```
 
 Ingest an allowed local path:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/knowledge/ingest \
+curl -X POST http://localhost:8001/api/v1/knowledge/ingest \
   -H 'Content-Type: application/json' \
   -d '{"organization_id":1,"path":"/workspace/knowledge/menu.md","source":"menu"}'
 ```
@@ -295,7 +295,7 @@ curl -X POST http://localhost:8000/api/v1/knowledge/ingest \
 Search knowledge:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/knowledge/search \
+curl -X POST http://localhost:8001/api/v1/knowledge/search \
   -H 'Content-Type: application/json' \
   -d '{"query":"baklava","limit":5}'
 ```
