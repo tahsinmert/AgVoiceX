@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { N8n } from "@thesvg/react";
+import { N8nIcon } from "@/components/brand-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +25,7 @@ export default function WorkflowsPage() {
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-md border bg-card">
-          <N8n className="h-6 w-6" />
+          <N8nIcon className="h-6 w-6 text-primary" />
         </div>
         <div>
           <h1 className="text-2xl font-semibold">Workflow Builder</h1>

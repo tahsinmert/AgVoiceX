@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Ollama } from "@thesvg/react";
 
+import { OllamaIcon } from "@/components/brand-icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -35,7 +35,7 @@ export default function SettingsPage() {
       <div>
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-md border bg-card">
-            <Ollama className="h-6 w-6" />
+            <OllamaIcon className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-semibold">Model Settings</h1>

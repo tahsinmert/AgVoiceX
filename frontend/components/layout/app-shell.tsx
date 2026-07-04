@@ -19,8 +19,8 @@ import {
   BookOpenText,
   SlidersHorizontal,
 } from "lucide-react";
-import { N8n, Ollama, Qdrant } from "@thesvg/react";
 
+import { N8nIcon, OllamaIcon, QdrantIcon } from "@/components/brand-icons";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -29,13 +29,13 @@ const nav = [
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/prompt-studio", label: "Prompts", icon: Sparkles },
   { href: "/settings", label: "Models", icon: SlidersHorizontal },
-  { href: "/ollama", label: "Ollama", icon: Ollama },
+  { href: "/ollama", label: "Ollama", icon: OllamaIcon },
   { href: "/knowledge", label: "Knowledge", icon: BookOpenText },
   { href: "/reservations", label: "Reservations", icon: CalendarDays },
   { href: "/conversations", label: "Conversations", icon: MessageSquareText },
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
-  { href: "/workflows", label: "Workflows", icon: N8n },
-  { href: "/rag", label: "RAG", icon: Qdrant },
+  { href: "/workflows", label: "Workflows", icon: N8nIcon },
+  { href: "/rag", label: "RAG", icon: QdrantIcon },
   { href: "/templates", label: "Templates", icon: LayoutTemplate },
   { href: "/branding", label: "Branding", icon: Palette },
   { href: "/plugins", label: "Plugins", icon: Plug },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Postgresql, Qdrant } from "@thesvg/react";
+import { PostgresqlIcon, QdrantIcon } from "@/components/brand-icons";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -15,12 +15,12 @@ export default function RAGPage() {
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-md border bg-card">
-          <Qdrant className="h-6 w-6" />
+          <QdrantIcon className="h-6 w-6 text-primary" />
         </div>
         <div>
           <h1 className="text-2xl font-semibold">RAG Ingestion Pipeline</h1>
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Postgresql className="h-4 w-4" />
+            <PostgresqlIcon className="h-4 w-4" />
             PostgreSQL chunks with Qdrant indexing support.
           </p>
         </div>
