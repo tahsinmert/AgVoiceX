@@ -1,0 +1,47 @@
+{
+  "name": "Reservation CRUD",
+  "nodes": [
+    {
+      "parameters": {"path": "reservations", "responseMode": "responseNode", "options": {}},
+      "id": "reservation-crud-webhook",
+      "name": "Reservations Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "reservation-crud"
+    },
+    {
+      "parameters": {"url": "http://backend:8000/api/v1/settings", "options": {}},
+      "id": "reservation-crud-settings",
+      "name": "Get AI Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/api/v1/reservations",
+        "options": {}
+      },
+      "id": "reservation-crud-api",
+      "name": "List Reservations",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [620, 300]
+    },
+    {
+      "parameters": {"respondWith": "json", "responseBody": "={{ $json }}", "options": {}},
+      "id": "reservation-crud-response",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [860, 300]
+    }
+  ],
+  "connections": {
+    "Reservations Webhook": {"main": [[{"node": "Get AI Settings", "type": "main", "index": 0}]]},
+    "Get AI Settings": {"main": [[{"node": "List Reservations", "type": "main", "index": 0}]]},
+    "List Reservations": {"main": [[{"node": "Respond", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"}
+}

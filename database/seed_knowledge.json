@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Opening Hours",
+    "body": "The restaurant is open Monday through Sunday from 10:00 to 22:00.",
+    "source": "seed"
+  },
+  {
+    "title": "Reservation Policy",
+    "body": "Reservations can be created, updated, or cancelled with a confirmation number.",
+    "source": "seed"
+  }
+]

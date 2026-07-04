@@ -1,0 +1,51 @@
+{
+  "name": "FAQ",
+  "nodes": [
+    {
+      "parameters": {"path": "faq", "responseMode": "responseNode", "options": {}},
+      "id": "faq-webhook",
+      "name": "FAQ Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "faq"
+    },
+    {
+      "parameters": {"url": "http://backend:8000/api/v1/settings", "options": {}},
+      "id": "faq-settings",
+      "name": "Get AI Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/v1/conversations/message",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $('FAQ Webhook').item.json.body.question || $('FAQ Webhook').item.json.body.message || '', channel: 'n8n-faq', metadata: $('FAQ Webhook').item.json.body }) }}",
+        "options": {}
+      },
+      "id": "faq-api",
+      "name": "Local Conversation API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [620, 300]
+    },
+    {
+      "parameters": {"respondWith": "json", "responseBody": "={{ $json }}", "options": {}},
+      "id": "faq-response",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [860, 300]
+    }
+  ],
+  "connections": {
+    "FAQ Webhook": {"main": [[{"node": "Get AI Settings", "type": "main", "index": 0}]]},
+    "Get AI Settings": {"main": [[{"node": "Local Conversation API", "type": "main", "index": 0}]]},
+    "Local Conversation API": {"main": [[{"node": "Respond", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"}
+}

@@ -1,0 +1,51 @@
+{
+  "name": "Knowledge Search",
+  "nodes": [
+    {
+      "parameters": {"path": "knowledge/search", "responseMode": "responseNode", "options": {}},
+      "id": "knowledge-webhook",
+      "name": "Knowledge Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "knowledge-search"
+    },
+    {
+      "parameters": {"url": "http://backend:8000/api/v1/settings", "options": {}},
+      "id": "knowledge-settings",
+      "name": "Get AI Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/v1/knowledge/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query: $('Knowledge Webhook').item.json.body.query || $('Knowledge Webhook').item.json.body.question || '', limit: $('Knowledge Webhook').item.json.body.limit || 5 }) }}",
+        "options": {}
+      },
+      "id": "knowledge-api",
+      "name": "Search Knowledge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [620, 300]
+    },
+    {
+      "parameters": {"respondWith": "json", "responseBody": "={{ $json }}", "options": {}},
+      "id": "knowledge-response",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [860, 300]
+    }
+  ],
+  "connections": {
+    "Knowledge Webhook": {"main": [[{"node": "Get AI Settings", "type": "main", "index": 0}]]},
+    "Get AI Settings": {"main": [[{"node": "Search Knowledge", "type": "main", "index": 0}]]},
+    "Search Knowledge": {"main": [[{"node": "Respond", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"}
+}
