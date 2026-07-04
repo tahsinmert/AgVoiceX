@@ -110,3 +110,44 @@ async def test_lmstudio_generate_uses_selected_model():
     assert method == "POST"
     assert url == "http://localhost:1234/v1/chat/completions"
     assert payload["model"] == "selected-openai-compatible-model"
+
+
+def test_intent_parser_accepts_fenced_json():
+    intent = OllamaProvider._parse_intent_json(
+        """```json
+        {"intent":"reservation_create","customer_name":"Ada","phone":"5550101","date":"2026-07-10","time":"19:00","people":2}
+        ```"""
+    )
+
+    assert intent is not None
+    assert intent.intent == "reservation_create"
+    assert intent.customer_name == "Ada"
+
+
+def test_intent_normalizer_converts_natural_date_and_time():
+    intent = OllamaProvider._parse_intent_json(
+        """{"intent":"reservation_create","customer_name":"Ada","phone":"5550101","date":"tomorrow","time":"7","people":2}"""
+    )
+
+    assert intent is not None
+    normalized = OllamaProvider._normalize_intent(intent)
+    assert normalized.date != "tomorrow"
+    assert normalized.time == "19:00"
+
+    intent_pm = OllamaProvider._parse_intent_json(
+        """{"intent":"reservation_create","date":"tomorrow","time":"7:00 PM","people":2}"""
+    )
+    assert intent_pm is not None
+    assert OllamaProvider._normalize_intent(intent_pm).time == "19:00"
+
+
+def test_intent_parser_infers_reservation_when_model_output_is_invalid():
+    intent = OllamaProvider._infer_intent(
+        "Book a table for 2 tomorrow at 7. My name is Ada Lovelace and my phone is 555-0101."
+    )
+
+    assert intent.intent == "reservation_create"
+    assert intent.customer_name == "Ada Lovelace"
+    assert intent.phone == "555-0101"
+    assert intent.people == 2
+    assert intent.time == "19:00"

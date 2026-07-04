@@ -6,8 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Voice Agent Admin",
-  description: "Local-first AI agent platform admin UI",
+  title: "AgVoiceX",
+  description: "Voice agent operations platform",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -16,8 +16,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          storageKey="agvoicex-theme"
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <TooltipProvider delayDuration={100}>

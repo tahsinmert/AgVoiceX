@@ -240,7 +240,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
           <p className="mt-1 text-sm text-muted-foreground">Reservation assistant</p>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
           {stateLabel}
         </span>
       </div>
@@ -254,12 +254,12 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
 
           <div className="flex flex-1 flex-col items-center justify-center gap-5 py-4">
             <div className="relative flex h-40 w-40 items-center justify-center rounded-full border border-border bg-card">
-              <div className={`absolute inset-3 rounded-full border ${isRecording ? "border-emerald-500/60" : "border-border"}`} />
-              <div className={`absolute inset-8 rounded-full ${isRecording ? "bg-emerald-500/15" : "bg-muted/40"}`} />
+              <div className={`absolute inset-3 rounded-full border ${isRecording ? "border-primary/60" : "border-border"}`} />
+              <div className={`absolute inset-8 rounded-full ${isRecording ? "bg-primary/10" : "bg-muted/40"}`} />
               {isProcessing ? (
-                <Loader2 className="relative h-12 w-12 animate-spin text-emerald-500" />
+                <Loader2 className="relative h-12 w-12 animate-spin text-primary" />
               ) : (
-                <AudioLines className={`relative h-14 w-14 ${isRecording ? "text-emerald-500" : "text-muted-foreground"}`} />
+                <AudioLines className={`relative h-14 w-14 ${isRecording ? "text-primary" : "text-muted-foreground"}`} />
               )}
             </div>
 
@@ -306,7 +306,7 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
         <div className="flex min-h-0 flex-col rounded-lg border border-border bg-background">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-emerald-500" />
+              <Bot className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold">Conversation</h2>
             </div>
           </div>
@@ -314,12 +314,12 @@ export function VoiceClient({ compact = false }: { compact?: boolean }) {
             {turns.length ? (
               turns.map((turn) => (
                 <div key={turn.id} className="space-y-3">
-                  <div className="ml-auto max-w-[78%] rounded-lg bg-emerald-600 px-4 py-3 text-sm text-white">
+                  <div className="ml-auto max-w-[78%] rounded-lg bg-primary px-4 py-3 text-sm text-primary-foreground">
                     {turn.user}
                   </div>
                   <div className="max-w-[78%] rounded-lg border border-border bg-card px-4 py-3 text-sm">
                     <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                      <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
                       {turn.intent ?? "assistant"}
                     </div>
                     {turn.agent}

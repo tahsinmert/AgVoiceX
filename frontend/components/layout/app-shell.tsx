@@ -65,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     href={item.href}
                     className={cn(
                       "flex h-10 w-10 items-center justify-center rounded-md transition-colors",
-                      active ? "bg-primary/20 text-emerald-500" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <item.icon className="h-5 w-5" />

@@ -45,7 +45,7 @@ async def test_malformed_intent_json_returns_unknown_intent():
     intent = await BrokenProvider().detect_intent("broken", "hello")
 
     assert intent.intent == "unknown"
-    assert "rephrase" in intent.reply
+    assert "reservations" in intent.reply
 
 
 def test_agent_update_respects_optional_tenant_scope():
