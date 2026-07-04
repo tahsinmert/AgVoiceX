@@ -7,7 +7,6 @@ import {
   Bot,
   CalendarDays,
   ChartNoAxesCombined,
-  Gauge,
   LayoutTemplate,
   MessageSquareText,
   Plug,
@@ -20,29 +19,30 @@ import {
   ServerCog,
   Search,
   HelpCircle,
-  Lightbulb,
   Sun,
   Moon,
+  AudioLines,
+  BookOpenText,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const nav = [
-  { href: "/", label: "Dashboard", icon: Gauge },
-  { href: "/conversations", label: "Conversations", icon: MessageSquareText },
-  { href: "/reservations", label: "Reservations", icon: CalendarDays },
-  { href: "/knowledge", label: "Knowledge Base", icon: Database },
-  { href: "/rag", label: "RAG Pipeline", icon: Database },
-  { href: "/templates", label: "Templates", icon: LayoutTemplate },
-  { href: "/prompt-studio", label: "Prompt Studio", icon: Sparkles },
+  { href: "/", label: "Voice Console", icon: AudioLines },
+  { href: "/voice", label: "Live Voice Agent", icon: Mic },
   { href: "/agents", label: "Agents", icon: Bot },
+  { href: "/prompt-studio", label: "Prompts", icon: Sparkles },
+  { href: "/settings", label: "Models", icon: SlidersHorizontal },
+  { href: "/ollama", label: "Ollama", icon: ServerCog },
+  { href: "/knowledge", label: "Knowledge", icon: BookOpenText },
+  { href: "/reservations", label: "Reservations", icon: CalendarDays },
+  { href: "/conversations", label: "Calls", icon: MessageSquareText },
   { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined },
-  { href: "/settings", label: "AI Settings", icon: Settings },
-  { href: "/ollama", label: "Ollama Manager", icon: ServerCog },
-  { href: "/playground", label: "Playground", icon: Sparkles },
-  { href: "/voice", label: "Browser Voice", icon: Mic },
   { href: "/workflows", label: "Workflows", icon: Workflow },
+  { href: "/rag", label: "RAG", icon: Database },
+  { href: "/templates", label: "Templates", icon: LayoutTemplate },
   { href: "/branding", label: "Branding", icon: Palette },
   { href: "/plugins", label: "Plugins", icon: Plug },
 ];
@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold">AgVoiceX</span>
-            <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">PRO</span>
+            <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-500">LOCAL VOICE</span>
           </div>
           <div className="flex items-center gap-4">
             <button className="text-xs font-medium text-muted-foreground hover:text-foreground hidden sm:block">
@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search..."
+              placeholder="Search calls, agents, knowledge..."
                 className="h-8 w-48 lg:w-64 rounded-md border border-border bg-muted/30 pl-8 pr-12 text-sm outline-none placeholder:text-muted-foreground focus:border-primary focus:bg-background"
               />
               <div className="absolute right-1.5 top-1.5 flex items-center justify-center rounded border border-border bg-background px-1 text-[10px] font-medium text-muted-foreground shadow-sm">
@@ -117,9 +117,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <button className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
               <HelpCircle className="h-4 w-4" />
-            </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
-              <Lightbulb className="h-4 w-4" />
             </button>
             <div className="h-8 w-8 overflow-hidden rounded-full border border-border">
               <img

@@ -16,6 +16,7 @@ class VoiceOrchestrator:
 
     async def handle_connection(self, websocket: WebSocket):
         await websocket.accept()
+        await websocket.send_json({"type": "ready"})
         logger.info("Voice connection accepted.")
         
         try:

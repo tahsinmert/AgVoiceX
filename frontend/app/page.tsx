@@ -1,167 +1,172 @@
 "use client";
 
+import type React from "react";
 import { useEffect, useState } from "react";
-import { Search, ChevronDown, ListFilter, LayoutGrid, List, Plus, MoreVertical, PauseCircle, CheckCircle2, Circle, Clock } from "lucide-react";
+import {
+  Activity,
+  AudioLines,
+  CalendarClock,
+  CheckCircle2,
+  Database,
+  MessageSquareText,
+  PhoneCall,
+  Server,
+  Sparkles,
+} from "lucide-react";
 
+import { VoiceClient } from "@/components/voice/voice-client";
 import { api } from "@/lib/api";
-import type { AdminAnalytics, AdminToday, Conversation, Health, Reservation } from "@/types/api";
+import type { AdminAnalytics, Conversation, Health, Model, Reservation } from "@/types/api";
 
-export default function DashboardPage() {
+export default function VoiceConsolePage() {
+  const [health, setHealth] = useState<Health | null>(null);
+  const [models, setModels] = useState<Model[]>([]);
   const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null);
-  const [today, setToday] = useState<AdminToday | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [errors, setErrors] = useState<number>(0);
-  const [health, setHealth] = useState<Health | null>(null);
 
   useEffect(() => {
     void Promise.all([
-      api.analytics().then(setAnalytics),
-      api.today().then(setToday),
-      api.reservations().then(setReservations),
-      api.conversations().then(setConversations),
-      api.errors().then((value) => setErrors(value.length)),
-      api.health().then(setHealth),
+      api.health().then(setHealth).catch(() => setHealth(null)),
+      api.models().then(setModels).catch(() => setModels([])),
+      api.analytics().then(setAnalytics).catch(() => setAnalytics(null)),
+      api.reservations().then(setReservations).catch(() => setReservations([])),
+      api.conversations().then(setConversations).catch(() => setConversations([])),
     ]);
   }, []);
 
+  const activeModel = models[0]?.name ?? "No model visible";
+  const latestCalls = conversations.slice(0, 5);
+  const upcomingReservations = reservations.slice(0, 5);
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-normal text-foreground">Dashboard</h1>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search for a reservation"
-              className="h-8 w-64 rounded-md border border-border bg-muted pl-8 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
-            />
-          </div>
-          <button className="flex h-8 items-center gap-2 rounded-md border border-border bg-muted px-3 text-xs font-medium text-muted-foreground hover:text-foreground">
-            Status <ChevronDown className="h-3 w-3" />
-          </button>
-          <button className="flex h-8 items-center gap-2 rounded-md border border-border bg-muted px-3 text-xs font-medium text-muted-foreground hover:text-foreground">
-            <ListFilter className="h-3 w-3" /> Sorted by time
-          </button>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1">
-            <button className="flex h-8 w-8 items-center justify-center rounded-md bg-[#2c2c2c] text-foreground">
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground">
-              <List className="h-4 w-4" />
-            </button>
-          </div>
-          <button className="flex h-8 items-center gap-1.5 rounded-md bg-emerald-600 px-3 text-xs font-medium text-card-foreground hover:bg-emerald-700">
-            <Plus className="h-4 w-4" /> New reservation
-          </button>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {reservations.length === 0 ? (
-              <div className="col-span-2 flex h-32 items-center justify-center rounded-lg border border-border border-dashed text-sm text-muted-foreground">
-                No reservations found
+    <div className="space-y-6">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+        <div className="min-h-[520px] rounded-lg border border-border bg-card p-5 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-500">
+                <AudioLines className="h-3.5 w-3.5" />
+                Local, unlimited voice agent
               </div>
-            ) : (
-              reservations.slice(0, 6).map((item) => (
-                <div key={item.id} className="rounded-lg border border-border bg-card p-5 hover:border-muted-foreground/50 transition-colors cursor-pointer">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-card-foreground">{item.customer_name ?? `Reservation #${item.id}`}</h3>
-                      <p className="mt-1 text-xs text-muted-foreground">{item.people} guests | {item.reservation_time}</p>
-                    </div>
-                    <button className="text-muted-foreground hover:text-card-foreground">
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <div className="mt-6 flex items-center gap-2">
-                    {item.status === 'confirmed' ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                    ) : (
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <span className="text-xs text-muted-foreground">Reservation is {item.status}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div>
-          <div className="rounded-lg border border-border bg-card p-5">
-            <div className="mb-6 flex items-start justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-card-foreground">System Usage</h3>
-                <p className="mt-1 text-xs text-muted-foreground">Current operational snapshot</p>
-              </div>
-              <button className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-500 hover:bg-emerald-500/20">
-                Refresh Stats
-              </button>
+              <h1 className="max-w-3xl text-3xl font-semibold tracking-normal text-foreground sm:text-4xl">
+                Talk to your restaurant agent and let it handle reservations.
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Speak naturally, confirm availability, create reservations, answer questions from knowledge, and store every conversation through the same local runtime.
+              </p>
             </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-                  <Circle className="h-3 w-3" />
-                  <span>Today's Rsvps</span>
-                </div>
-                <div className="text-xs text-card-foreground">
-                  {today?.reservations ?? "—"} <span className="text-muted-foreground">/ 100</span>
-                </div>
+            <div className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-emerald-500">
+                <CheckCircle2 className="h-4 w-4" />
+                {health?.status === "ok" ? "Backend online" : "Checking backend"}
               </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-                  <Circle className="h-3 w-3" />
-                  <span>Total Customers</span>
-                </div>
-                <div className="text-xs text-card-foreground">
-                  {analytics?.customers ?? "—"} <span className="text-muted-foreground">/ 1,000</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-                  <Circle className="h-3 w-3" />
-                  <span>Conversations</span>
-                </div>
-                <div className="text-xs text-card-foreground">
-                  {conversations.length} <span className="text-muted-foreground">/ 500</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-                  <Circle className="h-3 w-3" />
-                  <span>System Errors</span>
-                </div>
-                <div className="text-xs text-card-foreground">
-                  {errors} <span className="text-muted-foreground">/ 50</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-                  <Circle className="h-3 w-3" />
-                  <span>Backend Health</span>
-                </div>
-                <div className="text-xs text-emerald-500">
-                  {health ? "Online" : "Checking"}
-                </div>
-              </div>
+              <div className="mt-1 max-w-52 truncate">Model: {activeModel}</div>
             </div>
           </div>
+
+          <VoiceClient compact={false} />
         </div>
+
+        <div className="space-y-4">
+          <Metric icon={PhoneCall} label="Voice calls" value={conversations.length} detail="Stored conversation turns" />
+          <Metric icon={CalendarClock} label="Reservations" value={reservations.length} detail="Created through tools or UI" />
+          <Metric icon={Database} label="Customers" value={analytics?.customers ?? "—"} detail="Local PostgreSQL records" />
+          <Metric icon={Server} label="Provider models" value={models.length} detail={activeModel} />
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <Panel title="Recent Voice/Chat Turns" icon={MessageSquareText}>
+          {latestCalls.length ? (
+            <div className="space-y-3">
+              {latestCalls.map((item) => (
+                <div key={item.id} className="rounded-md border border-border bg-background p-3">
+                  <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                    <span>{item.channel}</span>
+                    <span>{item.intent ?? "unknown"}</span>
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-sm">{item.user_message}</p>
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.assistant_reply}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyLine text="No conversations yet. Start with the voice console above." />
+          )}
+        </Panel>
+
+        <Panel title="Upcoming Reservations" icon={CalendarClock}>
+          {upcomingReservations.length ? (
+            <div className="space-y-3">
+              {upcomingReservations.map((item) => (
+                <div key={item.id} className="flex items-center justify-between rounded-md border border-border bg-background p-3">
+                  <div>
+                    <p className="text-sm font-medium">{item.customer_name ?? `Reservation #${item.id}`}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {item.reservation_date} at {item.reservation_time} · {item.people} guests
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground">{item.status}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyLine text="No reservations yet. Ask the voice agent to book a table." />
+          )}
+        </Panel>
+      </section>
+    </div>
+  );
+}
+
+function Metric({
+  icon: Icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: typeof Activity;
+  label: string;
+  value: string | number;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-5">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background text-emerald-500">
+        <Icon className="h-5 w-5" />
       </div>
+      <div className="text-2xl font-semibold">{value}</div>
+      <div className="mt-1 text-sm font-medium">{label}</div>
+      <div className="mt-1 truncate text-xs text-muted-foreground">{detail}</div>
+    </div>
+  );
+}
+
+function Panel({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: typeof Sparkles;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-card">
+      <div className="flex items-center gap-2 border-b border-border px-5 py-4">
+        <Icon className="h-4 w-4 text-emerald-500" />
+        <h2 className="text-sm font-semibold">{title}</h2>
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
+
+function EmptyLine({ text }: { text: string }) {
+  return (
+    <div className="flex min-h-32 items-center justify-center rounded-md border border-dashed border-border text-sm text-muted-foreground">
+      {text}
     </div>
   );
 }

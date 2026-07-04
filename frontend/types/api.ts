@@ -193,3 +193,13 @@ export type WorkflowDefinition = {
   enabled: boolean;
   definition: Record<string, unknown>;
 };
+
+export type VoiceCapabilities = {
+  stt_available: boolean;
+  tts_available: boolean;
+  stt_model_path: string;
+  tts_model_name: string;
+  tts_device: string;
+  tts_language: string;
+  mode: string;
+};

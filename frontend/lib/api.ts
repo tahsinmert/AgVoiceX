@@ -21,6 +21,7 @@ import type {
   Reservation,
   RuntimeEvent,
   Setting,
+  VoiceCapabilities,
   WorkflowDefinition,
 } from "@/types/api";
 
@@ -123,4 +124,5 @@ export const api = {
   workflows: () => request<WorkflowDefinition[]>("/workflows"),
   createWorkflow: (body: Partial<WorkflowDefinition> & { slug: string; name: string }) =>
     request<WorkflowDefinition>("/workflows", { method: "POST", body: JSON.stringify(body) }),
+  voiceCapabilities: () => request<VoiceCapabilities>("/voice/capabilities"),
 };
