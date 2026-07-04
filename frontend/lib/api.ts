@@ -25,8 +25,8 @@ import type {
   WorkflowDefinition,
 } from "@/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
-const HEALTH_URL = process.env.NEXT_PUBLIC_HEALTH_URL ?? "http://localhost:8000/health";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001/api/v1";
+const HEALTH_URL = process.env.NEXT_PUBLIC_HEALTH_URL ?? "http://localhost:8001/health";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
