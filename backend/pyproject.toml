@@ -14,7 +14,7 @@ dependencies = [
   "python-dotenv>=1.0.1",
   "redis>=5.0.8",
   "sqlalchemy>=2.0.35",
-  "uvicorn[standard]>=0.30.6",
+  "uvicorn[standard]>=0.50.0",
   "websockets>=13.1",
   "setuptools<81.0.0"
 ]
